@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {Input, Button, Space, Typography, notification} from 'antd';
+import { Input, Button, Space, Typography, notification } from 'antd';
 
 const { Title } = Typography;
 
@@ -7,7 +7,8 @@ const CountdownTimer: React.FC = () => {
     const [seconds, setSeconds] = useState<number>(0); // оставшееся время в секундах
     const [inputValue, setInputValue] = useState<string>(''); // значение поля ввода
     const [isRunning, setIsRunning] = useState<boolean>(false); // состояние таймера (запущен/остановлен)
-    const [timerId, setTimerId] = useState<number | null>(null); // идентификатор интервала
+    const [timerId, setTimerId] = useState<number| null>(null); // идентификатор интервала
+    const [notified, setNotified] = useState<boolean>(false); // состояние уведомления
 
     // Обработчик для изменения поля ввода
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -19,6 +20,7 @@ const CountdownTimer: React.FC = () => {
         const time = parseInt(inputValue, 10);
         if (!isNaN(time) && time > 0) {
             setSeconds(time);
+            setNotified(false); // сброс уведомления
         }
     };
 
@@ -39,6 +41,7 @@ const CountdownTimer: React.FC = () => {
         setIsRunning(false);
         setSeconds(0);
         setInputValue('');
+        setNotified(false); // сброс состояния уведомления
         if (timerId) {
             clearInterval(timerId);
             setTimerId(null);
@@ -64,7 +67,10 @@ const CountdownTimer: React.FC = () => {
                     } else {
                         clearInterval(id);
                         setIsRunning(false);
-                        openNotification(); // Показ уведомления при завершении таймера
+                        if (!notified) {
+                            openNotification(); // Показ уведомления при завершении таймера
+                            setNotified(true); // Установить уведомление как показанное
+                        }
                         return 0;
                     }
                 });
@@ -75,10 +81,19 @@ const CountdownTimer: React.FC = () => {
             // Очистка интервала при размонтировании компонента или при изменении состояния
             return () => clearInterval(id);
         }
-    }, [isRunning]);
+    }, [isRunning, notified]);
+
+    // useEffect для отслеживания окончания таймера и показа уведомления
+    useEffect(() => {
+        if (seconds === 0 && isRunning) {
+            openNotification(); // Показ уведомления только при завершении таймера
+            setIsRunning(false); // Остановка таймера
+        }
+    }, [seconds, isRunning]); // Следим за изменением seconds и isRunning
+
 
     return (
-        <div style={{padding: '20px', maxWidth: '400px', margin: '0 auto', textAlign: 'center'}}>
+        <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
             <Title level={2}>Таймер обратного отсчета</Title>
             <Space direction="vertical" size="middle">
                 <Input
@@ -109,4 +124,3 @@ const CountdownTimer: React.FC = () => {
 };
 
 export default CountdownTimer;
-
