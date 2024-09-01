@@ -3,6 +3,23 @@ import { Input, Button, Space, Typography, notification } from 'antd';
 
 const { Title } = Typography;
 
+// Функция для получения правильного склонения
+const getSecondsLabel = (seconds: number): string => {
+    const lastDigit = seconds % 10;
+    const lastTwoDigits = seconds % 100;
+
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
+        return 'секунд';
+    }
+    if (lastDigit === 1) {
+        return 'секунда';
+    }
+    if (lastDigit >= 2 && lastDigit <= 4) {
+        return 'секунды';
+    }
+    return 'секунд';
+};
+
 const CountdownTimer: React.FC = () => {
     const [seconds, setSeconds] = useState<number>(0); // оставшееся время в секундах
     const [inputValue, setInputValue] = useState<string>(''); // значение поля ввода
@@ -106,7 +123,9 @@ const CountdownTimer: React.FC = () => {
                 <Button type="primary" onClick={handleSetTime}>
                     Установить время
                 </Button>
-                <Title level={3}>{seconds} секунд</Title>
+                <Title level={3}>
+                    {seconds} {getSecondsLabel(seconds)}
+                </Title>
                 <Space>
                     <Button type="primary" onClick={handleStart} disabled={isRunning || seconds === 0}>
                         Старт
